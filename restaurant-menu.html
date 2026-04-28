@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SpiceNest — Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fffdf8;
+  --surface:#fff;
+  --card:#fff;
+  --border:#e8e0d0;
+  --accent:#c0392b;
+  --accent2:#e67e22;
+  --text:#1a1208;
+  --muted:#7a6a54;
+  --green:#27ae60;
+  --tag-bg:#fef9f0;
+  --tag-border:#f0d9b5;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* ── NAV ── */
+.top-bar{background:var(--accent);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;}
+.brand{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;letter-spacing:0.5px;}
+.brand small{font-family:'DM Sans',sans-serif;font-size:0.65rem;font-weight:400;opacity:0.8;display:block;letter-spacing:2px;}
+.admin-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:7px 16px;border-radius:6px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;}
+.admin-btn:hover{background:rgba(255,255,255,0.3);}
+
+/* ── TABS ── */
+.cat-tabs{display:flex;gap:8px;padding:16px 16px 0;overflow-x:auto;scrollbar-width:none;background:var(--surface);border-bottom:1px solid var(--border);}
+.cat-tabs::-webkit-scrollbar{display:none;}
+.tab-btn{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:0.8rem;cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ── MENU GRID ── */
+.menu-section{padding:16px;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--accent2);display:inline-block;}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:28px;}
+.menu-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;transition:transform 0.2s;}
+.menu-card:hover{transform:translateY(-2px);}
+.card-img{width:100%;height:160px;object-fit:cover;background:#f5ede0;display:flex;align-items:center;justify-content:center;font-size:3.5rem;}
+.card-img img{width:100%;height:100%;object-fit:cover;}
+.card-body{padding:12px 14px 14px;}
+.card-name{font-weight:500;font-size:1rem;margin-bottom:4px;}
+.card-desc{font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:10px;}
+.card-footer{display:flex;justify-content:space-between;align-items:center;}
+.card-price{font-size:1.05rem;font-weight:500;color:var(--accent);}
+.card-price span{font-size:0.75rem;color:var(--muted);font-weight:400;}
+.veg-badge{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.veg-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+
+/* ── ADMIN PANEL ── */
+.panel-overlay{display:none;background:rgba(0,0,0,0.5);padding:20px;min-height:100vh;}
+.panel-overlay.open{display:block;}
+.panel{background:var(--surface);border-radius:16px;max-width:700px;margin:0 auto;overflow:hidden;}
+.panel-header{background:var(--accent);color:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;}
+.panel-header h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;}
+.close-btn{background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;}
+
+.panel-body{padding:20px;}
+
+/* Add form */
+.add-form{background:#fef9f0;border:1px solid var(--tag-border);border-radius:12px;padding:16px;margin-bottom:20px;}
+.add-form h3{font-size:0.85rem;font-weight:500;color:var(--muted);margin-bottom:12px;letter-spacing:1px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-row.single{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:0.75rem;color:var(--muted);font-weight:500;}
+.form-group input,.form-group select,.form-group textarea{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;background:var(--surface);color:var(--text);}
+.form-group textarea{resize:vertical;min-height:60px;}
+.add-item-btn{background:var(--accent);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:background 0.2s;}
+.add-item-btn:hover{background:#a93226;}
+
+/* Admin list */
+.admin-list{display:flex;flex-direction:column;gap:10px;}
+.admin-item{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;display:flex;gap:12px;align-items:center;padding:10px 14px;}
+.admin-item-img{width:54px;height:54px;border-radius:8px;object-fit:cover;background:#f5ede0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;}
+.admin-item-img img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.admin-item-info{flex:1;min-width:0;}
+.admin-item-name{font-weight:500;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.admin-item-meta{font-size:0.75rem;color:var(--muted);}
+.admin-actions{display:flex;gap:6px;flex-shrink:0;}
+.edit-btn,.del-btn{padding:5px 12px;border-radius:6px;border:none;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.edit-btn{background:#eaf3fb;color:#185FA5;border:1px solid #b5d4f4;}
+.del-btn{background:#fcebeb;color:#a32d2d;border:1px solid #f7c1c1;}
+
+/* QR section */
+.qr-section{text-align:center;padding:20px 0 0;}
+.qr-section p{font-size:0.8rem;color:var(--muted);margin-top:8px;}
+#qr-canvas{border-radius:8px;}
+
+/* ── EDIT MODAL ── */
+.modal-wrap{display:none;background:rgba(0,0,0,0.6);min-height:400px;align-items:center;justify-content:center;padding:20px;}
+.modal-wrap.open{display:flex;}
+.modal{background:var(--surface);border-radius:14px;padding:20px;width:100%;max-width:440px;}
+.modal h3{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.save-btn{background:var(--green);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.cancel-btn{background:var(--bg);color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ── HERO ── */
+.hero{background:var(--accent);color:#fff;padding:20px;text-align:center;}
+.hero h1{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:800;}
+.hero p{font-size:0.82rem;opacity:0.85;margin-top:4px;}
+
+@media(max-width:480px){
+  .form-row{grid-template-columns:1fr;}
+  .menu-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="brand">SpiceNest <small>RESTAURANT</small></div>
+  <button class="admin-btn" onclick="toggleAdmin()">Owner Login</button>
+</div>
+
+<!-- CUSTOMER VIEW -->
+<div id="customer-view">
+  <div class="hero">
+    <h1>Our Menu</h1>
+    <p>Fresh ingredients, bold flavours — made with love</p>
+  </div>
+
+  <div class="cat-tabs" id="cat-tabs"></div>
+  <div class="menu-section" id="menu-section"></div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="panel-overlay" id="admin-panel">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Owner Panel</h2>
+      <button class="close-btn" onclick="toggleAdmin()">&#x2715;</button>
+    </div>
+    <div class="panel-body">
+
+      <!-- Add Item Form -->
+      <div class="add-form">
+        <h3>ADD NEW ITEM</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="new-name" placeholder="e.g. Paneer Tikka"/>
+          </div>
+          <div class="form-group">
+            <label>Price (₹)</label>
+            <input type="number" id="new-price" placeholder="e.g. 149"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="new-cat">
+              <option value="Beverages">Beverages</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Healthy">Healthy</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Main Course">Main Course</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Emoji (as image)</label>
+            <input type="text" id="new-emoji" placeholder="e.g. 🍜"/>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="new-desc" placeholder="Short description of the item..."></textarea>
+          </div>
+        </div>
+        <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
+      </div>
+
+      <!-- Item List -->
+      <div id="admin-list" class="admin-list"></div>
+
+      <!-- QR Code -->
+      <div class="qr-section">
+        <div id="qr-canvas" style="display:inline-block;"></div>
+        <p>Scan this QR to open the menu on any device</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-wrap" id="edit-modal">
+  <div class="modal">
+    <h3>Edit Item</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="edit-name"/>
+      </div>
+      <div class="form-group">
+        <label>Price (₹)</label>
+        <input type="number" id="edit-price"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="edit-cat">
+          <option value="Beverages">Beverages</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Healthy">Healthy</option>
+          <option value="Chinese">Chinese</option>
+          <option value="Main Course">Main Course</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" id="edit-emoji"/>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="edit-desc"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeEdit()">Cancel</button>
+      <button class="save-btn" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let items = [
+  {id:1, name:'Cold Coffee', price:99, cat:'Beverages', emoji:'☕', desc:'Creamy chilled coffee blended with milk and ice, topped with whipped cream.'},
+  {id:2, name:'Mojito', price:101, cat:'Beverages', emoji:'🍹', desc:'Refreshing mint mojito with a zingy lime twist, lightly sweetened.'},
+  {id:3, name:'Veg Wraps', price:99, cat:'Snacks', emoji:'🌯', desc:'Soft tortilla wrap stuffed with fresh veggies, paneer, and spicy chutney.'},
+  {id:4, name:'Sandwich', price:119, cat:'Snacks', emoji:'🥪', desc:'Toasted multigrain sandwich loaded with veggies, cheese, and mint spread.'},
+  {id:5, name:'Quinoa Salad', price:149, cat:'Healthy', emoji:'🥗', desc:'Protein-rich quinoa tossed with cucumber, cherry tomatoes, olives, and lemon dressing.'},
+  {id:6, name:'Fruit Bowl', price:89, cat:'Healthy', emoji:'🍓', desc:'Seasonal fresh fruits served with a drizzle of honey and chia seeds.'},
+  {id:7, name:'Veg Fried Rice', price:139, cat:'Chinese', emoji:'🍚', desc:'Wok-tossed rice with mixed vegetables, soy sauce, and a hint of sesame oil.'},
+  {id:8, name:'Hakka Noodles', price:129, cat:'Chinese', emoji:'🍜', desc:'Classic Hakka-style noodles stir-fried with colourful veggies and sauces.'},
+  {id:9, name:'Manchurian', price:159, cat:'Chinese', emoji:'🥢', desc:'Crispy veggie balls in a tangy, spicy Manchurian gravy. A crowd favourite!'},
+  {id:10, name:'Green Smoothie', price:109, cat:'Healthy', emoji:'🥤', desc:'Spinach, banana, and almond milk blended into a nutritious energising drink.'},
+];
+let nextId = 11;
+let editingId = null;
+let activeCategory = 'All';
+
+const categories = () => ['All', ...new Set(items.map(i => i.cat))];
+
+function renderTabs() {
+  const tabs = document.getElementById('cat-tabs');
+  tabs.innerHTML = categories().map(c =>
+    `<button class="tab-btn ${c === activeCategory ? 'active' : ''}" onclick="filterCat('${c}')">${c}</button>`
+  ).join('');
+}
+
+function filterCat(cat) {
+  activeCategory = cat;
+  renderTabs();
+  renderMenu();
+}
+
+function renderMenu() {
+  const filtered = activeCategory === 'All' ? items : items.filter(i => i.cat === activeCategory);
+  const bycat = {};
+  filtered.forEach(i => { if (!bycat[i.cat]) bycat[i.cat] = []; bycat[i.cat].push(i); });
+  const section = document.getElementById('menu-section');
+  section.innerHTML = Object.entries(bycat).map(([cat, list]) => `
+    <div>
+      <div class="section-title">${cat}</div>
+      <div class="menu-grid">
+        ${list.map(item => `
+          <div class="menu-card">
+            <div class="card-img">${item.emoji}</div>
+            <div class="card-body">
+              <div class="card-name">${item.name}</div>
+              <div class="card-desc">${item.desc}</div>
+              <div class="card-footer">
+                <div class="card-price">₹${item.price} <span>/ serving</span></div>
+                <div class="veg-badge"><div class="veg-dot"></div></div>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function renderAdminList() {
+  const list = document.getElementById('admin-list');
+  list.innerHTML = items.map(item => `
+    <div class="admin-item">
+      <div class="admin-item-img">${item.emoji}</div>
+      <div class="admin-item-info">
+        <div class="admin-item-name">${item.name}</div>
+        <div class="admin-item-meta">₹${item.price} &nbsp;|&nbsp; ${item.cat}</div>
+      </div>
+      <div class="admin-actions">
+        <button class="edit-btn" onclick="openEdit(${item.id})">Edit</button>
+        <button class="del-btn" onclick="deleteItem(${item.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function addItem() {
+  const name = document.getElementById('new-name').value.trim();
+  const price = parseInt(document.getElementById('new-price').value);
+  const cat = document.getElementById('new-cat').value;
+  const emoji = document.getElementById('new-emoji').value.trim() || '🍽';
+  const desc = document.getElementById('new-desc').value.trim() || 'A delicious item from our kitchen.';
+  if (!name || !price) { alert('Please enter item name and price.'); return; }
+  items.push({ id: nextId++, name, price, cat, emoji, desc });
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-price').value = '';
+  document.getElementById('new-emoji').value = '';
+  document.getElementById('new-desc').value = '';
+  renderAll();
+}
+
+function deleteItem(id) {
+  if (!confirm('Delete this item?')) return;
+  items = items.filter(i => i.id !== id);
+  renderAll();
+}
+
+function openEdit(id) {
+  editingId = id;
+  const item = items.find(i => i.id === id);
+  document.getElementById('edit-name').value = item.name;
+  document.getElementById('edit-price').value = item.price;
+  document.getElementById('edit-cat').value = item.cat;
+  document.getElementById('edit-emoji').value = item.emoji;
+  document.getElementById('edit-desc').value = item.desc;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEdit() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingId = null;
+}
+
+function saveEdit() {
+  const item = items.find(i => i.id === editingId);
+  item.name = document.getElementById('edit-name').value.trim();
+  item.price = parseInt(document.getElementById('edit-price').value);
+  item.cat = document.getElementById('edit-cat').value;
+  item.emoji = document.getElementById('edit-emoji').value.trim() || '🍽';
+  item.desc = document.getElementById('edit-desc').value.trim();
+  closeEdit();
+  renderAll();
+}
+
+function toggleAdmin() {
+  const panel = document.getElementById('admin-panel');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  if (!isOpen) { renderAdminList(); generateQR(); }
+}
+
+function generateQR() {
+  const el = document.getElementById('qr-canvas');
+  el.innerHTML = '';
+  new QRCode(el, {
+    text: window.location.href || 'https://spicenest.menu',
+    width: 160,
+    height: 160,
+    colorDark: '#c0392b',
+    colorLight: '#fffdf8',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
+
+function renderAll() {
+  renderTabs();
+  renderMenu();
+  if (document.getElementById('admin-panel').classList.contains('open')) renderAdminList();
+}
+
+renderAll();
+</script>
+</body>
+</html>
